@@ -3,22 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MyTest - Тестування</title>
-    <!-- Підключення Tailwind CSS для стилів -->
+    <title>MyTestX - Тестування</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Підключення шрифту Inter з Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
-        /* Базові стилі для тіла та контейнера */
         body {
             font-family: 'Inter', sans-serif;
             background-color: #f3f4f6;
             transition: background-color 0.3s ease;
-            color: #1f2937;
         }
         .container {
             max-width: 800px;
-            padding: 1rem;
+            padding: 2rem;
         }
         .card {
             background-color: white;
@@ -31,421 +27,308 @@
             transform: translateY(-5px);
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
         }
-        .hidden {
-            display: none;
-        }
-        /* Стилі для кнопок */
-        .btn {
-            padding: 0.75rem 1.5rem;
-            border-radius: 9999px;
-            font-weight: 600;
-            text-align: center;
-            cursor: pointer;
-            transition: background-color 0.3s ease, transform 0.1s ease;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .btn-primary {
-            background-color: #3b82f6;
-            color: white;
-            box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.5), 0 2px 4px -1px rgba(59, 130, 246, 0.25);
-        }
-        .btn-primary:hover:not(:disabled) {
-            background-color: #2563eb;
-            transform: translateY(-1px);
-        }
-        .btn-primary:disabled {
-            background-color: #93c5fd;
-            cursor: not-allowed;
-        }
-        .btn-secondary {
-            background-color: #f3f4f6;
-            color: #4b5563;
-            border: 1px solid #d1d5db;
-        }
-        .btn-secondary:hover:not(:disabled) {
-            background-color: #e5e7eb;
-            transform: translateY(-1px);
-        }
-        /* Стилі для індикаторів */
-        .dot {
-            height: 12px;
-            width: 12px;
-            background-color: #d1d5db;
-            border-radius: 50%;
-            display: inline-block;
-            margin: 0 4px;
-        }
-        .active-dot {
-            background-color: #3b82f6;
-        }
-        /* Анімація для завантаження */
-        .loading-spinner {
-            border: 4px solid rgba(255, 255, 255, 0.3);
-            border-top: 4px solid #fff;
-            border-radius: 50%;
-            width: 24px;
-            height: 24px;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        /* Стилі для повідомлень */
-        .message-box {
-            padding: 1rem;
-            border-radius: 0.5rem;
-            margin-top: 1rem;
-            text-align: center;
-            animation: fadein 0.5s;
-        }
-        .message-success {
-            background-color: #d1fae5;
-            color: #065f46;
-        }
-        .message-error {
-            background-color: #fee2e2;
-            color: #991b1b;
-        }
-        @keyframes fadein {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        /* Стилі для кастомного file input */
-        .custom-file-input {
-            background-color: #f3f4f6;
-            color: #4b5563;
-            border: 1px solid #d1d5db;
-            border-radius: 0.5rem;
-            cursor: pointer;
-            display: block;
-            text-align: center;
-            padding: 0.75rem 1.5rem;
-            transition: background-color 0.3s ease;
-        }
-        .custom-file-input:hover {
-            background-color: #e5e7eb;
-        }
-        input[type="file"] {
-            display: none;
-        }
     </style>
 </head>
-<body class="flex items-center justify-center min-h-screen">
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
     <div class="container mx-auto p-4 md:p-8">
 
-        <!-- Головний екран -->
-        <div id="main-screen" class="card mx-auto shadow-lg">
-            <h1 class="text-3xl font-bold text-center mb-6">Ласкаво просимо до MyTest</h1>
-            <p class="text-center text-gray-600 mb-8">Цей тест допоможе вам перевірити свої знання.</p>
+        <!-- Initial Screen for entering student info -->
+        <div id="main-screen" class="card mx-auto text-center">
+            <h1 id="quizTitle" class="text-3xl font-bold text-gray-800 mb-6">Тест</h1>
+            <p class="text-gray-600 mb-4">Будь ласка, введіть свої дані, щоб почати тестування.</p>
             <div class="space-y-4">
-                <input type="text" id="student-name" placeholder="Ваше ім'я та прізвище"
-                       class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                <input type="text" id="student-group" placeholder="Ваша група (наприклад, К-1)"
-                       class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                <label for="quiz-file" id="quiz-file-label" class="custom-file-input">Вибрати файл тесту (.json)</label>
-                <input type="file" id="quiz-file" accept=".json">
-            </div>
-            <div class="mt-8 flex justify-center">
-                <button id="start-btn" class="btn btn-primary w-full md:w-auto">
-                    <span id="start-btn-text">Почати тестування</span>
-                    <span id="start-btn-spinner" class="loading-spinner ml-2 hidden"></span>
+                <input type="text" id="studentName" placeholder="ПІБ" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <input type="text" id="studentGroup" placeholder="Група" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <button id="startBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl transition-colors duration-300">
+                    Почати тестування
                 </button>
             </div>
-            <p id="error-message-box" class="message-error mt-4 hidden"></p>
+            <div id="studentLoading" class="mt-4 hidden">
+                <p class="text-blue-500">Завантаження тесту, зачекайте...</p>
+            </div>
+            <div id="studentError" class="mt-4 text-red-500 hidden"></div>
         </div>
 
-        <!-- Екран тесту -->
+        <!-- Quiz Screen -->
         <div id="test-screen" class="card mx-auto hidden">
-            <h2 class="text-2xl font-bold mb-6 text-center" id="test-title"></h2>
-            <div id="question-container">
-                <!-- Питання та варіанти відповідей будуть вставлені сюди JS -->
+            <div id="quiz-header" class="mb-4">
+                <h2 id="currentQuizTitle" class="text-2xl font-bold text-gray-800"></h2>
+                <p id="question-counter" class="text-sm text-gray-500 mt-2"></p>
             </div>
-            <div class="flex justify-between items-center mt-8">
-                <div id="pagination-dots" class="flex items-center"></div>
-                <button id="next-btn" class="btn btn-primary">Далі</button>
-                <button id="submit-btn" class="btn btn-primary hidden">Завершити</button>
+            <div class="space-y-6">
+                <h3 id="questionText" class="text-xl font-medium text-gray-700"></h3>
+                <div id="options-container" class="flex flex-col space-y-3"></div>
+            </div>
+            <div class="mt-8 flex justify-between">
+                <button id="prevBtn" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-6 rounded-xl transition-colors duration-300">
+                    Попередня
+                </button>
+                <button id="nextBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-xl transition-colors duration-300">
+                    Наступна
+                </button>
+                <button id="submitBtn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-xl transition-colors duration-300 hidden">
+                    Завершити тест
+                </button>
             </div>
         </div>
 
-        <!-- Екран результатів -->
-        <div id="results-screen" class="card mx-auto text-center hidden">
-            <h2 class="text-3xl font-bold mb-4">Тестування завершено!</h2>
-            <div class="bg-gray-100 p-6 rounded-xl space-y-3">
-                <p id="total-questions" class="text-lg">Загальна кількість запитань:</p>
-                <p id="correct-answers" class="text-lg">Правильних відповідей:</p>
-                <p id="score-percentage" class="text-3xl font-extrabold text-blue-600 mt-4">Ваш результат: 0%</p>
+        <!-- Results Screen -->
+        <div id="results-screen" class="card mx-auto hidden text-center">
+            <h2 class="text-3xl font-bold text-gray-800 mb-6">Результати тестування</h2>
+            <div class="space-y-4 text-left">
+                <p class="text-lg text-gray-700"><span class="font-bold">ПІБ:</span> <span id="resultsStudentName"></span></p>
+                <p class="text-lg text-gray-700"><span class="font-bold">Група:</span> <span id="resultsStudentGroup"></span></p>
+                <p id="totalQuestions" class="text-lg text-gray-700"></p>
+                <p id="correctAnswers" class="text-lg text-gray-700"></p>
+                <p id="scorePercentage" class="text-2xl font-bold text-blue-600"></p>
             </div>
-            <div class="mt-8 flex justify-center space-x-4">
-                <button id="restart-btn" class="btn btn-secondary">Повернутися на головну</button>
+            <div class="mt-8">
+                <button id="restartBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-xl transition-colors duration-300">
+                    Повернутися на головну
+                </button>
             </div>
-            <div id="save-message" class="message-success mt-4 hidden"></div>
         </div>
+
+        <!-- Modal for Confirmation -->
+        <div id="confirmationModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
+            <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-lg bg-white">
+                <div class="mt-3 text-center">
+                    <h3 class="text-lg leading-6 font-medium text-gray-900">Завершити тестування?</h3>
+                    <div class="mt-2 px-7 py-3">
+                        <p class="text-sm text-gray-500">
+                            Ви не зможете повернутися до запитань після завершення.
+                        </p>
+                    </div>
+                    <div class="items-center px-4 py-3">
+                        <button id="confirmSubmit" class="px-4 py-2 bg-green-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 mb-2">
+                            Так, завершити
+                        </button>
+                        <button id="cancelSubmit" class="px-4 py-2 bg-gray-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500">
+                            Ні, продовжити
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
 
-    <!-- Підключення Firebase SDK -->
+    <!-- Firebase -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInWithCustomToken, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
 
-        // Глобальні змінні, які надає середовище Canvas
+        // IMPORTANT: Use the global variables for Firebase configuration.
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
-        const authToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
         
-        // Встановлення рівня логування для Firebase
+        // Log all Firebase debug messages to the console
         setLogLevel('debug');
 
-        // Ініціалізація Firebase та Firestore
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
-        let userId = null;
-
-        // Елементи DOM
-        const mainScreen = document.getElementById('main-screen');
-        const testScreen = document.getElementById('test-screen');
-        const resultsScreen = document.getElementById('results-screen');
-        const startBtn = document.getElementById('start-btn');
-        const startBtnText = document.getElementById('start-btn-text');
-        const startBtnSpinner = document.getElementById('start-btn-spinner');
-        const quizFile = document.getElementById('quiz-file');
-        const quizFileLabel = document.getElementById('quiz-file-label');
-        const studentNameInput = document.getElementById('student-name');
-        const studentGroupInput = document.getElementById('student-group');
-        const questionContainer = document.getElementById('question-container');
-        const nextBtn = document.getElementById('next-btn');
-        const submitBtn = document.getElementById('submit-btn');
-        const testTitleEl = document.getElementById('test-title');
-        const paginationDots = document.getElementById('pagination-dots');
-        const totalQuestionsEl = document.getElementById('total-questions');
-        const correctAnswersEl = document.getElementById('correct-answers');
-        const scorePercentageEl = document.getElementById('score-percentage');
-        const restartBtn = document.getElementById('restart-btn');
-        const saveMessageEl = document.getElementById('save-message');
-        const errorMessageBox = document.getElementById('error-message-box');
-
+        let app, auth, db;
         let quizData = null;
         let currentQuestionIndex = 0;
         let userAnswers = {};
         let isSubmitted = false;
 
-        // Авторизація користувача при завантаженні
-        async function authenticateUser() {
+        // UI elements
+        const mainScreen = document.getElementById('main-screen');
+        const testScreen = document.getElementById('test-screen');
+        const resultsScreen = document.getElementById('results-screen');
+        const studentNameInput = document.getElementById('studentName');
+        const studentGroupInput = document.getElementById('studentGroup');
+        const startBtn = document.getElementById('startBtn');
+        const questionTextEl = document.getElementById('questionText');
+        const optionsContainer = document.getElementById('options-container');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const submitBtn = document.getElementById('submitBtn');
+        const resultsStudentNameEl = document.getElementById('resultsStudentName');
+        const resultsStudentGroupEl = document.getElementById('resultsStudentGroup');
+        const totalQuestionsEl = document.getElementById('totalQuestions');
+        const correctAnswersEl = document.getElementById('correctAnswers');
+        const scorePercentageEl = document.getElementById('scorePercentage');
+        const restartBtn = document.getElementById('restartBtn');
+        const questionCounterEl = document.getElementById('question-counter');
+        const studentLoading = document.getElementById('studentLoading');
+        const studentError = document.getElementById('studentError');
+        const quizTitleEl = document.getElementById('quizTitle');
+        const currentQuizTitleEl = document.getElementById('currentQuizTitle');
+        const confirmationModal = document.getElementById('confirmationModal');
+        const confirmSubmitBtn = document.getElementById('confirmSubmit');
+        const cancelSubmitBtn = document.getElementById('cancelSubmit');
+
+        // Initialize Firebase on page load
+        window.addEventListener('load', async () => {
             try {
-                if (authToken) {
-                    const userCredential = await signInWithCustomToken(auth, authToken);
-                    userId = userCredential.user.uid;
+                app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+
+                if (initialAuthToken) {
+                    await signInWithCustomToken(auth, initialAuthToken);
+                    console.log("Signed in with custom token.");
                 } else {
-                    const userCredential = await signInAnonymously(auth);
-                    userId = userCredential.user.uid;
+                    await signInAnonymously(auth);
+                    console.log("Signed in anonymously.");
                 }
-                console.log("Firebase authenticated. User ID:", userId);
-            } catch (error) {
-                console.error("Firebase authentication failed:", error);
-                showError("Помилка автентифікації. Будь ласка, оновіть сторінку.");
+
+                // Get test ID from URL
+                const urlParams = new URLSearchParams(window.location.search);
+                const testId = urlParams.get('testId');
+
+                if (!testId) {
+                    showError("Посилання на тест недійсне. Будь ласка, зверніться до викладача.");
+                    return;
+                }
+
+                // Fetch test data from Firestore
+                studentLoading.classList.remove('hidden');
+                const testDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'tests', testId);
+                const testDocSnap = await getDoc(testDocRef);
+
+                if (testDocSnap.exists()) {
+                    quizData = testDocSnap.data();
+                    quizTitleEl.textContent = `Тест: ${quizData.title}`;
+                    currentQuizTitleEl.textContent = quizData.title;
+                    studentLoading.classList.add('hidden');
+                } else {
+                    showError("Тест не знайдено.");
+                    quizTitleEl.textContent = "Помилка";
+                    studentLoading.classList.add('hidden');
+                }
+            } catch (e) {
+                console.error("Error initializing Firebase or fetching test: ", e);
+                showError("Не вдалося завантажити тест. Перевірте підключення до Інтернету.");
+                quizTitleEl.textContent = "Помилка";
+                studentLoading.classList.add('hidden');
             }
-        }
-        
-        authenticateUser();
-
-        // Функція для перемикання екранів
-        function showScreen(screen) {
-            mainScreen.classList.add('hidden');
-            testScreen.classList.add('hidden');
-            resultsScreen.classList.add('hidden');
-            screen.classList.remove('hidden');
-        }
-
-        // Відображення вибраного імені файлу
-        quizFile.addEventListener('change', (e) => {
-            const fileName = e.target.files[0] ? e.target.files[0].name : "Вибрати файл тесту (.json)";
-            quizFileLabel.textContent = fileName;
         });
 
-        // Функція для завантаження та парсингу JSON файлу
         startBtn.addEventListener('click', () => {
-            const file = quizFile.files[0];
             const studentName = studentNameInput.value.trim();
             const studentGroup = studentGroupInput.value.trim();
 
             if (!studentName || !studentGroup) {
-                showError("Будь ласка, введіть ваше ім'я та групу.");
+                showError("Будь ласка, заповніть усі поля.");
+                return;
+            }
+            if (!quizData) {
+                showError("Тест ще не завантажено. Будь ласка, зачекайте.");
                 return;
             }
 
-            if (!file) {
-                showError("Будь ласка, оберіть файл тесту (.json).");
-                return;
-            }
-
-            // Додаємо візуальний зворотний зв'язок
-            startBtn.disabled = true;
-            startBtnText.classList.add('hidden');
-            startBtnSpinner.classList.remove('hidden');
-            errorMessageBox.classList.add('hidden');
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    quizData = JSON.parse(e.target.result);
-                    if (!quizData.questions || !Array.isArray(quizData.questions) || quizData.questions.length === 0) {
-                        showError("Недійсний формат файлу. Будь ласка, переконайтеся, що файл містить масив питань.");
-                        return;
-                    }
-                    if (quizData.title) {
-                        testTitleEl.textContent = quizData.title;
-                    }
-                    showScreen(testScreen);
-                    renderQuestion();
-                    updatePaginationDots();
-                } catch (error) {
-                    showError("Помилка при обробці файлу. Переконайтеся, що це дійсний JSON.");
-                } finally {
-                    startBtn.disabled = false;
-                    startBtnText.classList.remove('hidden');
-                    startBtnSpinner.classList.add('hidden');
-                }
-            };
-            reader.onerror = function() {
-                showError("Помилка читання файлу.");
-                startBtn.disabled = false;
-                startBtnText.classList.remove('hidden');
-                startBtnSpinner.classList.add('hidden');
-            };
-            reader.readAsText(file);
+            document.getElementById('resultsStudentName').textContent = studentName;
+            document.getElementById('resultsStudentGroup').textContent = studentGroup;
+            showScreen(testScreen);
+            displayQuestion();
         });
 
-        // Функція для відображення поточного питання
-        function renderQuestion() {
-            if (!quizData || !quizData.questions[currentQuestionIndex]) return;
-
-            const question = quizData.questions[currentQuestionIndex];
-            questionContainer.innerHTML = ''; // Очищаємо попереднє питання
-
-            const questionEl = document.createElement('div');
-            questionEl.className = 'mb-6';
-            questionEl.innerHTML = `<h3 class="text-xl font-semibold mb-4">${currentQuestionIndex + 1}. ${question.question}</h3>`;
-
-            const optionsList = document.createElement('ul');
-            optionsList.className = 'space-y-3';
-
-            question.options.forEach((option, index) => {
-                const optionEl = document.createElement('li');
-                const radioId = `q${currentQuestionIndex}-opt${index}`;
-                
-                optionEl.innerHTML = `
-                    <label for="${radioId}" class="flex items-center p-4 border rounded-xl cursor-pointer hover:bg-gray-50 transition-colors duration-200">
-                        <input type="radio" id="${radioId}" name="question-${currentQuestionIndex}" value="${option}" class="form-radio h-5 w-5 text-blue-600">
-                        <span class="ml-3 text-gray-700">${option}</span>
-                    </label>
-                `;
-                
-                if (userAnswers[currentQuestionIndex] === option) {
-                    optionEl.querySelector('input').checked = true;
+        function showScreen(screenToShow) {
+            const screens = [mainScreen, testScreen, resultsScreen];
+            screens.forEach(screen => {
+                if (screen === screenToShow) {
+                    screen.classList.remove('hidden');
+                } else {
+                    screen.classList.add('hidden');
                 }
-                
-                optionsList.appendChild(optionEl);
             });
-            
-            questionContainer.appendChild(questionEl);
-            questionContainer.appendChild(optionsList);
+        }
 
-            const radioButtons = document.querySelectorAll(`input[name="question-${currentQuestionIndex}"]`);
-            radioButtons.forEach(radio => {
-                radio.addEventListener('change', (e) => {
+        function displayQuestion() {
+            const currentQuestion = quizData.questions[currentQuestionIndex];
+            questionTextEl.textContent = currentQuestion.question;
+            optionsContainer.innerHTML = '';
+            questionCounterEl.textContent = `Запитання ${currentQuestionIndex + 1} з ${quizData.questions.length}`;
+
+            currentQuestion.options.forEach(option => {
+                const button = document.createElement('button');
+                button.textContent = option;
+                button.classList.add('w-full', 'p-3', 'rounded-lg', 'text-left', 'border', 'border-gray-300', 'hover:bg-blue-100', 'transition-colors', 'duration-200');
+                if (userAnswers[currentQuestionIndex] === option) {
+                    button.classList.add('bg-blue-200', 'font-bold', 'border-blue-500');
+                } else {
+                    button.classList.add('bg-gray-50');
+                }
+                button.addEventListener('click', () => {
                     if (!isSubmitted) {
-                        userAnswers[currentQuestionIndex] = e.target.value;
+                        userAnswers[currentQuestionIndex] = option;
+                        displayQuestion();
                     }
                 });
+                optionsContainer.appendChild(button);
             });
 
-            if (currentQuestionIndex === quizData.questions.length - 1) {
-                nextBtn.classList.add('hidden');
-                submitBtn.classList.remove('hidden');
-            } else {
-                nextBtn.classList.remove('hidden');
-                submitBtn.classList.add('hidden');
+            // Update navigation buttons
+            prevBtn.classList.toggle('hidden', currentQuestionIndex === 0);
+            nextBtn.classList.toggle('hidden', currentQuestionIndex === quizData.questions.length - 1);
+            submitBtn.classList.toggle('hidden', currentQuestionIndex !== quizData.questions.length - 1);
+        }
+
+        prevBtn.addEventListener('click', () => {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                displayQuestion();
             }
-        }
+        });
 
-        // Функція для оновлення точок пагінації
-        function updatePaginationDots() {
-            paginationDots.innerHTML = '';
-            quizData.questions.forEach((_, index) => {
-                const dot = document.createElement('span');
-                dot.className = `dot ${index === currentQuestionIndex ? 'active-dot' : ''}`;
-                dot.addEventListener('click', () => {
-                    currentQuestionIndex = index;
-                    renderQuestion();
-                    updatePaginationDots();
-                });
-                paginationDots.appendChild(dot);
-            });
-        }
-
-        // Кнопка "Далі"
         nextBtn.addEventListener('click', () => {
             if (currentQuestionIndex < quizData.questions.length - 1) {
                 currentQuestionIndex++;
-                renderQuestion();
-                updatePaginationDots();
+                displayQuestion();
             }
         });
 
-        // Кнопка "Завершити"
-        submitBtn.addEventListener('click', async () => {
-            if (isSubmitted) return;
-            isSubmitted = true;
-            
-            let score = 0;
-            const answers = {};
+        submitBtn.addEventListener('click', () => {
+            confirmationModal.classList.remove('hidden');
+        });
 
-            quizData.questions.forEach((question, index) => {
-                const userAnswer = userAnswers[index];
-                const isCorrect = (userAnswer === question.answer);
-                if (isCorrect) {
+        confirmSubmitBtn.addEventListener('click', () => {
+            confirmationModal.classList.add('hidden');
+            if (!isSubmitted) {
+                isSubmitted = true;
+                calculateAndSaveScore();
+            }
+        });
+
+        cancelSubmitBtn.addEventListener('click', () => {
+            confirmationModal.classList.add('hidden');
+        });
+
+        function calculateAndSaveScore() {
+            let score = 0;
+            const answersArray = quizData.questions.map(q => q.answer);
+            for (let i = 0; i < answersArray.length; i++) {
+                if (userAnswers[i] && userAnswers[i] === answersArray[i]) {
                     score++;
                 }
-                answers[`q${index + 1}`] = {
-                    question: question.question,
-                    userAnswer: userAnswer || "Немає відповіді",
-                    correctAnswer: question.answer,
-                    isCorrect: isCorrect
-                };
-            });
-            
-            const studentName = studentNameInput.value.trim();
-            const studentGroup = studentGroupInput.value.trim();
-            
+            }
+            saveResultToFirestore(score);
+        }
+
+        async function saveResultToFirestore(score) {
             try {
-                const resultsRef = collection(db, `/artifacts/${appId}/public/data/quiz_results`);
-                
-                await addDoc(resultsRef, {
-                    studentName: studentName,
-                    studentGroup: studentGroup,
+                const resultsCollectionRef = collection(db, 'artifacts', appId, 'public', 'data', 'results');
+                await addDoc(resultsCollectionRef, {
+                    studentName: studentNameInput.value,
+                    studentGroup: studentGroupInput.value,
+                    quizTitle: quizData.title,
                     score: score,
                     totalQuestions: quizData.questions.length,
                     percentage: ((score / quizData.questions.length) * 100).toFixed(2),
-                    answers: answers,
-                    timestamp: new Date()
+                    timestamp: serverTimestamp(),
+                    answers: userAnswers
                 });
-
-                saveMessageEl.textContent = "Результати успішно збережено в базі даних!";
-                saveMessageEl.classList.remove('hidden');
+                console.log("Результат збережено у Firestore!");
                 showResults(score);
             } catch (e) {
-                console.error("Помилка збереження документа: ", e);
-                saveMessageEl.textContent = "Помилка збереження результатів. Перевірте з'єднання.";
-                saveMessageEl.classList.add('message-error');
-                saveMessageEl.classList.remove('message-success');
-                saveMessageEl.classList.remove('hidden');
+                console.error("Помилка додавання документа: ", e);
                 showResults(score);
             }
-        });
+        }
 
         function showResults(score) {
             testScreen.classList.add('hidden');
@@ -462,21 +345,18 @@
             showScreen(mainScreen);
             studentNameInput.value = '';
             studentGroupInput.value = '';
-            quizFileLabel.textContent = "Вибрати файл тесту (.json)";
             quizData = null;
             currentQuestionIndex = 0;
             userAnswers = {};
             isSubmitted = false;
-            saveMessageEl.classList.add('hidden');
-            saveMessageEl.classList.remove('message-error');
-            saveMessageEl.classList.add('message-success');
         });
         
         function showError(message) {
-            errorMessageBox.textContent = message;
-            errorMessageBox.classList.remove('hidden');
+            studentLoading.classList.add('hidden');
+            studentError.textContent = message;
+            studentError.classList.remove('hidden');
             setTimeout(() => {
-                errorMessageBox.classList.add('hidden');
+                studentError.classList.add('hidden');
             }, 5000);
         }
     </script>
