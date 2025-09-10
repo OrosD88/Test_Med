@@ -18,7 +18,7 @@
         }
         .container {
             max-width: 800px;
-            padding: 2rem;
+            padding: 1rem;
         }
         .card {
             background-color: white;
@@ -42,22 +42,29 @@
             text-align: center;
             cursor: pointer;
             transition: background-color 0.3s ease, transform 0.1s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
         }
         .btn-primary {
             background-color: #3b82f6;
             color: white;
             box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.5), 0 2px 4px -1px rgba(59, 130, 246, 0.25);
         }
-        .btn-primary:hover {
+        .btn-primary:hover:not(:disabled) {
             background-color: #2563eb;
             transform: translateY(-1px);
+        }
+        .btn-primary:disabled {
+            background-color: #93c5fd;
+            cursor: not-allowed;
         }
         .btn-secondary {
             background-color: #f3f4f6;
             color: #4b5563;
             border: 1px solid #d1d5db;
         }
-        .btn-secondary:hover {
+        .btn-secondary:hover:not(:disabled) {
             background-color: #e5e7eb;
             transform: translateY(-1px);
         }
@@ -75,8 +82,8 @@
         }
         /* Анімація для завантаження */
         .loading-spinner {
-            border: 4px solid rgba(0, 0, 0, 0.1);
-            border-top: 4px solid #3b82f6;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid #fff;
             border-radius: 50%;
             width: 24px;
             height: 24px;
@@ -91,6 +98,8 @@
             padding: 1rem;
             border-radius: 0.5rem;
             margin-top: 1rem;
+            text-align: center;
+            animation: fadein 0.5s;
         }
         .message-success {
             background-color: #d1fae5;
@@ -99,6 +108,28 @@
         .message-error {
             background-color: #fee2e2;
             color: #991b1b;
+        }
+        @keyframes fadein {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        /* Стилі для кастомного file input */
+        .custom-file-input {
+            background-color: #f3f4f6;
+            color: #4b5563;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            display: block;
+            text-align: center;
+            padding: 0.75rem 1.5rem;
+            transition: background-color 0.3s ease;
+        }
+        .custom-file-input:hover {
+            background-color: #e5e7eb;
+        }
+        input[type="file"] {
+            display: none;
         }
     </style>
 </head>
@@ -114,13 +145,16 @@
                        class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                 <input type="text" id="student-group" placeholder="Ваша група (наприклад, К-1)"
                        class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                <input type="file" id="quiz-file" accept=".json" class="w-full">
+                <label for="quiz-file" id="quiz-file-label" class="custom-file-input">Вибрати файл тесту (.json)</label>
+                <input type="file" id="quiz-file" accept=".json">
             </div>
             <div class="mt-8 flex justify-center">
-                <button id="start-btn" class="btn btn-primary w-full md:w-auto">Почати тестування</button>
+                <button id="start-btn" class="btn btn-primary w-full md:w-auto">
+                    <span id="start-btn-text">Почати тестування</span>
+                    <span id="start-btn-spinner" class="loading-spinner ml-2 hidden"></span>
+                </button>
             </div>
-            <p id="student-loading" class="text-center text-gray-500 mt-4 hidden">Завантаження...</p>
-            <p id="student-error" class="message-error text-center mt-4 hidden"></p>
+            <p id="error-message-box" class="message-error mt-4 hidden"></p>
         </div>
 
         <!-- Екран тесту -->
@@ -155,13 +189,15 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        import { doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // Глобальні змінні, які надає середовище Canvas
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
         const authToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+        
+        // Встановлення рівня логування для Firebase
+        setLogLevel('debug');
 
         // Ініціалізація Firebase та Firestore
         const app = initializeApp(firebaseConfig);
@@ -169,7 +205,35 @@
         const auth = getAuth(app);
         let userId = null;
 
-        // Авторизація користувача
+        // Елементи DOM
+        const mainScreen = document.getElementById('main-screen');
+        const testScreen = document.getElementById('test-screen');
+        const resultsScreen = document.getElementById('results-screen');
+        const startBtn = document.getElementById('start-btn');
+        const startBtnText = document.getElementById('start-btn-text');
+        const startBtnSpinner = document.getElementById('start-btn-spinner');
+        const quizFile = document.getElementById('quiz-file');
+        const quizFileLabel = document.getElementById('quiz-file-label');
+        const studentNameInput = document.getElementById('student-name');
+        const studentGroupInput = document.getElementById('student-group');
+        const questionContainer = document.getElementById('question-container');
+        const nextBtn = document.getElementById('next-btn');
+        const submitBtn = document.getElementById('submit-btn');
+        const testTitleEl = document.getElementById('test-title');
+        const paginationDots = document.getElementById('pagination-dots');
+        const totalQuestionsEl = document.getElementById('total-questions');
+        const correctAnswersEl = document.getElementById('correct-answers');
+        const scorePercentageEl = document.getElementById('score-percentage');
+        const restartBtn = document.getElementById('restart-btn');
+        const saveMessageEl = document.getElementById('save-message');
+        const errorMessageBox = document.getElementById('error-message-box');
+
+        let quizData = null;
+        let currentQuestionIndex = 0;
+        let userAnswers = {};
+        let isSubmitted = false;
+
+        // Авторизація користувача при завантаженні
         async function authenticateUser() {
             try {
                 if (authToken) {
@@ -186,34 +250,7 @@
             }
         }
         
-        // Виклик автентифікації при завантаженні
         authenticateUser();
-
-        // Елементи DOM
-        const mainScreen = document.getElementById('main-screen');
-        const testScreen = document.getElementById('test-screen');
-        const resultsScreen = document.getElementById('results-screen');
-        const startBtn = document.getElementById('start-btn');
-        const quizFile = document.getElementById('quiz-file');
-        const studentNameInput = document.getElementById('student-name');
-        const studentGroupInput = document.getElementById('student-group');
-        const questionContainer = document.getElementById('question-container');
-        const nextBtn = document.getElementById('next-btn');
-        const submitBtn = document.getElementById('submit-btn');
-        const testTitleEl = document.getElementById('test-title');
-        const paginationDots = document.getElementById('pagination-dots');
-        const totalQuestionsEl = document.getElementById('total-questions');
-        const correctAnswersEl = document.getElementById('correct-answers');
-        const scorePercentageEl = document.getElementById('score-percentage');
-        const restartBtn = document.getElementById('restart-btn');
-        const saveMessageEl = document.getElementById('save-message');
-        const studentLoading = document.getElementById('student-loading');
-        const studentError = document.getElementById('student-error');
-
-        let quizData = null;
-        let currentQuestionIndex = 0;
-        let userAnswers = {};
-        let isSubmitted = false;
 
         // Функція для перемикання екранів
         function showScreen(screen) {
@@ -222,6 +259,12 @@
             resultsScreen.classList.add('hidden');
             screen.classList.remove('hidden');
         }
+
+        // Відображення вибраного імені файлу
+        quizFile.addEventListener('change', (e) => {
+            const fileName = e.target.files[0] ? e.target.files[0].name : "Вибрати файл тесту (.json)";
+            quizFileLabel.textContent = fileName;
+        });
 
         // Функція для завантаження та парсингу JSON файлу
         startBtn.addEventListener('click', () => {
@@ -239,8 +282,11 @@
                 return;
             }
 
-            studentLoading.style.display = 'block';
-            studentError.style.display = 'none';
+            // Додаємо візуальний зворотний зв'язок
+            startBtn.disabled = true;
+            startBtnText.classList.add('hidden');
+            startBtnSpinner.classList.remove('hidden');
+            errorMessageBox.classList.add('hidden');
 
             const reader = new FileReader();
             reader.onload = function(e) {
@@ -256,11 +302,19 @@
                     showScreen(testScreen);
                     renderQuestion();
                     updatePaginationDots();
-                    studentLoading.style.display = 'none';
                 } catch (error) {
                     showError("Помилка при обробці файлу. Переконайтеся, що це дійсний JSON.");
-                    studentLoading.style.display = 'none';
+                } finally {
+                    startBtn.disabled = false;
+                    startBtnText.classList.remove('hidden');
+                    startBtnSpinner.classList.add('hidden');
                 }
+            };
+            reader.onerror = function() {
+                showError("Помилка читання файлу.");
+                startBtn.disabled = false;
+                startBtnText.classList.remove('hidden');
+                startBtnSpinner.classList.add('hidden');
             };
             reader.readAsText(file);
         });
@@ -290,7 +344,6 @@
                     </label>
                 `;
                 
-                // Перевіряємо, чи була раніше надана відповідь
                 if (userAnswers[currentQuestionIndex] === option) {
                     optionEl.querySelector('input').checked = true;
                 }
@@ -301,7 +354,6 @@
             questionContainer.appendChild(questionEl);
             questionContainer.appendChild(optionsList);
 
-            // Додаємо слухачі подій для збереження відповіді користувача
             const radioButtons = document.querySelectorAll(`input[name="question-${currentQuestionIndex}"]`);
             radioButtons.forEach(radio => {
                 radio.addEventListener('change', (e) => {
@@ -311,7 +363,6 @@
                 });
             });
 
-            // Показуємо/ховаємо кнопки "Далі" та "Завершити"
             if (currentQuestionIndex === quizData.questions.length - 1) {
                 nextBtn.classList.add('hidden');
                 submitBtn.classList.remove('hidden');
@@ -353,7 +404,6 @@
             let score = 0;
             const answers = {};
 
-            // Підраховуємо бали та зберігаємо відповіді
             quizData.questions.forEach((question, index) => {
                 const userAnswer = userAnswers[index];
                 const isCorrect = (userAnswer === question.answer);
@@ -368,12 +418,10 @@
                 };
             });
             
-            // Зберігаємо результати у Firestore
             const studentName = studentNameInput.value.trim();
             const studentGroup = studentGroupInput.value.trim();
             
             try {
-                // Шлях для збереження результатів тестування у Firestore
                 const resultsRef = collection(db, `/artifacts/${appId}/public/data/quiz_results`);
                 
                 await addDoc(resultsRef, {
@@ -386,11 +434,9 @@
                     timestamp: new Date()
                 });
 
-                console.log("Результати успішно збережено в Firestore!");
                 saveMessageEl.textContent = "Результати успішно збережено в базі даних!";
                 saveMessageEl.classList.remove('hidden');
                 showResults(score);
-
             } catch (e) {
                 console.error("Помилка збереження документа: ", e);
                 saveMessageEl.textContent = "Помилка збереження результатів. Перевірте з'єднання.";
@@ -416,6 +462,7 @@
             showScreen(mainScreen);
             studentNameInput.value = '';
             studentGroupInput.value = '';
+            quizFileLabel.textContent = "Вибрати файл тесту (.json)";
             quizData = null;
             currentQuestionIndex = 0;
             userAnswers = {};
@@ -426,14 +473,12 @@
         });
         
         function showError(message) {
-            studentLoading.style.display = 'none';
-            studentError.textContent = message;
-            studentError.style.display = 'block';
+            errorMessageBox.textContent = message;
+            errorMessageBox.classList.remove('hidden');
             setTimeout(() => {
-                studentError.style.display = 'none';
+                errorMessageBox.classList.add('hidden');
             }, 5000);
         }
     </script>
 </body>
 </html>
-
